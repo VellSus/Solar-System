@@ -70,6 +70,7 @@ sun = createSun(
   false,
   "./assets/textures/sun.jpg"
 );
+sun.name = "Sun";
 mercury = createSphere(
   3.2,
   "#FFFFFF",
@@ -77,6 +78,7 @@ mercury = createSphere(
   true,
   "./assets/textures/mercury.jpg"
 );
+mercury.name="Mercury";
 venus = createSphere(
   4.8,
   "#FFFFFF",
@@ -84,6 +86,7 @@ venus = createSphere(
   true,
   "./assets/textures/venus.jpg"
 );
+venus.name="Venus";
 earth = createSphere(
   4.8,
   "#FFFFFF",
@@ -91,6 +94,7 @@ earth = createSphere(
   true,
   "./assets/textures/earth.jpg"
 );
+earth.name="Earth";
 mars = createSphere(
   4,
   "#FFFFFF",
@@ -98,12 +102,14 @@ mars = createSphere(
   true,
   "./assets/textures/mars.jpg"
 );
+mars.name="Mars";
 jupiter = createSphere(
   13,
    "#FFFFFF",
     true,
     true,
     "./assets/textures/jupiter.jpg");
+  jupiter.name="Jupiter";
 saturn = createSphere(
   10,
   "#FFFFFF",
@@ -111,6 +117,7 @@ saturn = createSphere(
   true,
   "./assets/textures/saturn.jpg"
 );
+saturn.name="Saturn";
 uranus = createSphere(
   8,
   "#FFFFFF",
@@ -118,6 +125,7 @@ uranus = createSphere(
   true,
   "./assets/textures/uranus.jpg"
 );
+uranus.name="Uranus";
 neptune = createSphere(
   6,
   "#FFFFFF",
@@ -125,6 +133,7 @@ neptune = createSphere(
   true,
   "./assets/textures/neptune.jpg"
 );
+neptune.name="Neptune";
 let uranusring = createRing(
   16,
   20,
@@ -325,40 +334,46 @@ window.onmousemove = event =>{
   console.log(mouse);
   console.log(scene.children);
   mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-  mouse.y = -(event.clientX / window.innerWidth) * 2 + 1;
-  raycaster.setFromCamera(mouse,FRcamera);
+  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+  raycaster.setFromCamera(mouse,TPcamera);
   const planet=raycaster.intersectObjects(scene.children);
   if(planet.length>0){
   const object = planet[0].object;
-  if(object == sun){
-    createText("sun", {x:640,y:400,z:0});
-  }
-  if(object == mercury){
-    createText("mercury", { x: 58, y: 400, z: 0 });
-  }
-  if (object == venus) {
-    createText("venus", { x: 80, y: 400, z: 0 });
-  }
-  if (object == earth) {
-    createText("earth", { x: 100, y: 400, z: 0 });
-  }
-  if (object == mars) {
-    createText("mars", { x: 130, y: 400, z: 0 });
-  }
-  if (object == jupiter) {
-    createText("jupiter", { x: 175, y: 400, z: 0 });
-  }
-  if (object == saturn) {
-    createText("saturn", { x: 240, y: 400, z: 0 });
-  }
-  if (object == uranus) {
-    createText("uranus", { x: 280, y: 400, z: 0 });
-  }
-  if (object == neptune) {
-    createText("neptune", { x: 320, y: 400, z: 0 });
+  console.log(object.name);
+  switch (object.name) {
+    case "Sun":
+      createText("sun", { x: 640, y: 400, z: 0 });
+      break;
+    case "Mercury":
+      createText("mercury", { x: 58, y: 400, z: 0 });
+      break;
+    case "Venus":
+      createText("venus", { x: 80, y: 400, z: 0 });
+      break;
+    case "Earth":
+      createText("earth", { x: 100, y: 400, z: 0 });
+      break;
+    case "Mars":
+      createText("mars", { x: 130, y: 400, z: 0 });
+      break;
+    case "Jupiter":
+      createText("jupiter", { x: 175, y: 400, z: 0 });
+      break;
+    case "Saturn":
+      createText("saturn", { x: 240, y: 400, z: 0 });
+      break;
+    case "Uranus":
+      createText("uranus", { x: 280, y: 400, z: 0 });
+      break;
+    case "Neptune":
+      createText("neptune", { x: 320, y: 400, z: 0 });
+      break;
+    default:
+      console.log("nothing");
+      break;
   }
 }
-}
+  }
 
 const createText = (planet, position) => {
   const loader = new FontLoader();
@@ -374,4 +389,5 @@ const createText = (planet, position) => {
     scene.add(mesh); 
   });
 };
+
 
