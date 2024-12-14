@@ -4,7 +4,18 @@ import { OrbitControls } from "./threejs/threejs/examples/jsm/controls/OrbitCont
 import { FontLoader } from "./threejs/threejs/examples/jsm/loaders/FontLoader.js";
 import { TextGeometry } from "./threejs/threejs/examples/jsm/geometries/TextGeometry.js";
 var scene,FRcamera,TPcamera,renderer,x,y,z,orbitControls,spaceship,spotLight;
-let sun, mercury, venus, earth, mars, jupiter, saturn, uranus, neptune;
+let sun, mercury, venus, earth, mars, jupiter, saturn, uranus, neptune, textMesh=null;
+
+var speed = 0.05;
+var rotate = 0.005;
+
+var keyPressed = {
+  w: false,
+  a: false,
+  d: false,
+  space: false,
+  s: false,
+};
 
 const init=()=>{
 scene = new THREE.Scene();
@@ -38,13 +49,13 @@ const render=()=>{
 requestAnimationFrame(render);
 // orbitControls.update();
 renderer.render(scene,TPcamera);
+animate();
 }
 
 
 window.onload=()=>{
 init();
 render();
-addListener();
 }
 
 
@@ -264,7 +275,7 @@ const loadSpaceshipModel=()=>{
       spaceship = gltf.scene;
       spaceship.position.set(100, 320, 44); 
       spaceship.scale.set(1, 1, 1); 
-      spaceship.rotation.y = Math.PI / 2;
+      spaceship.rotation.y = 270;
       spaceship.castShadow = true;
       spaceship.receiveShadow = true;
       scene.add(spaceship);
@@ -283,40 +294,40 @@ const createCylinder = (top, bottom, height, segment,color,metalness,roughness,r
   return mesh;
 };
 
-let keyListener=event=>{
-  let keycode=event.keyCode;
-  if (keycode == 87) {
-    spaceship.position.x += 1;
-    TPcamera.position.x += 1;
-    spotLight.position.x += 1;
-  } else if (keycode == 83) {
-    spaceship.position.x -= 1;
-    TPcamera.position.x -= 1;
-    spotLight.position.x -= 1;
-  } else if (keycode == 65) {
-    spaceship.position.z -= 1;
-    TPcamera.position.z -= 1;
-    spotLight.position.z -= 1;
-  } else if (keycode == 68) {
-    spaceship.position.z += 1;
-    TPcamera.position.z += 1;
-    spotLight.position.z += 1;
-  } else if (keycode == 32) {
-    spaceship.position.y += 1;
-    TPcamera.position.y += 1;
-    spotLight.position.y += 1;
-  } else if (keycode == 8) {
-    spaceship.position.y -= 1;
-    TPcamera.position.y -= 1;
-    spotLight.position.y -= 1;
-  }
-  orbitControls.target=spaceship.position;
-  TPcamera.lookAt(spaceship.position);
+// let keyListener=event=>{
+//   let keycode=event.keyCode;
+//   if (keycode == 87) {
+//     spaceship.position.x += 1;
+//     TPcamera.position.x += 1;
+//     spotLight.position.x += 1;
+//   } else if (keycode == 83) {
+//     spaceship.position.x -= 1;
+//     TPcamera.position.x -= 1;
+//     spotLight.position.x -= 1;
+//   } else if (keycode == 65) {
+//     spaceship.position.z -= 1;
+//     TPcamera.position.z -= 1;
+//     spotLight.position.z -= 1;
+//   } else if (keycode == 68) {
+//     spaceship.position.z += 1;
+//     TPcamera.position.z += 1;
+//     spotLight.position.z += 1;
+//   } else if (keycode == 32) {
+//     spaceship.position.y += 1;
+//     TPcamera.position.y += 1;
+//     spotLight.position.y += 1;
+//   } else if (keycode == 8) {
+//     spaceship.position.y -= 1;
+//     TPcamera.position.y -= 1;
+//     spotLight.position.y -= 1;
+//   }
+//   orbitControls.target=spaceship.position;
+//   TPcamera.lookAt(spaceship.position);
 
-}
-let addListener=_=>{
-  document.addEventListener("keydown",keyListener);
-}
+// }
+// let addListener=_=>{
+//   document.addEventListener("keydown",keyListener);
+// }
 // let generateBoxes=()=>{
 //   for (let index = 0; index <3; index++) {
 //     const geometry= new THREE.BoxGeometry(2,2,2);
@@ -328,6 +339,49 @@ let addListener=_=>{
 //     scene.add(mesh);
 //   }
 // }
+
+const updateCamera = () => {
+  if (!spaceship) return;
+
+  const distanceBehind = 40;
+  const heightAbove = 10;
+
+  const offset = new THREE.Vector3(distanceBehind, heightAbove, 0);
+
+  offset.applyQuaternion(spaceship.quaternion);
+  TPcamera.position.copy(spaceship.position).add(offset);
+
+  let lookOffset = new THREE.Vector3().copy(spaceship.position);
+  // lookOffset.y += 0.5;
+
+  TPcamera.lookAt(lookOffset);
+};
+const animate = () => {
+  if(!spaceship){
+    return;
+  }
+  if (keyPressed.w) {
+    moveForward();
+  }
+
+  if (keyPressed.a) {
+    rotateLeft();
+  }
+
+  if (keyPressed.d) {
+    rotateRight();
+  }
+
+  if (keyPressed.space) {
+    rotateUp();
+  }
+
+  if (keyPressed.s) {
+    rotateDown();
+  }
+
+  updateCamera();
+};
 const mouse = new THREE.Vector2();
 const raycaster = new THREE.Raycaster();
 window.onmousemove = event =>{
@@ -370,6 +424,7 @@ window.onmousemove = event =>{
       break;
     default:
       console.log("nothing");
+      removeTextOnMouseMove();
       break;
   }
 }
@@ -377,17 +432,81 @@ window.onmousemove = event =>{
 
 const createText = (planet, position) => {
   const loader = new FontLoader();
-  loader.load("./assets/fonts/helvetiker_regular.typeface.json", (font) => {
+  loader.load("./threejs/threejs/examples/fonts/optimer_regular.typeface.json", (font) => {
     const geometry = new TextGeometry(planet, {
       font: font,
-      size: 10,
+      size: 100,
       height: 1,
     });
     const material = new THREE.MeshBasicMaterial({ color: 0x000000 });
     const mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(position.x, position.y, position.z);
+    mesh.scale.set(1, 1, 1);
+    if(textMesh){
+      removeTextOnMouseMove();
+    }
+    textMesh=mesh;
     scene.add(mesh); 
   });
+};
+const removeTextOnMouseMove = () => {
+  if (textMesh) {
+    scene.remove(textMesh); 
+    textMesh.geometry.dispose(); 
+    textMesh.material.dispose(); 
+    textMesh = null; 
+  }
+};
+window.addEventListener("mousemove", removeTextOnMouseMove);
+
+window.addEventListener("keydown", (event) => {
+  if (event.key === "w" || event.key === "W") {
+    keyPressed.w = true;
+  } else if (event.key === "a" || event.key === "A") {
+    keyPressed.a = true;
+  } else if (event.key === "d" || event.key === "D") {
+    keyPressed.d = true;
+  } else if (event.key === " " || event.key === "Spacebar") {
+    keyPressed.space = true;
+  } else if (event.key === "s" || event.key === "S") {
+    keyPressed.s = true;
+  }
+});
+
+window.addEventListener("keyup", (event) => {
+  if (event.key === "w" || event.key === "W") {
+    keyPressed.w = false;
+  } else if (event.key === "a" || event.key === "A") {
+    keyPressed.a = false;
+  } else if (event.key === "d" || event.key === "D") {
+    keyPressed.d = false;
+  } else if (event.key === " " || event.key === "Spacebar") {
+    keyPressed.space = false;
+  } else if (event.key === "s" || event.key === "S") {
+    keyPressed.s = false;
+  }
+});
+
+const moveForward = () => {
+  const direction = new THREE.Vector3(-1, 0, 0); // Arah default "maju"
+  direction.applyQuaternion(spaceship.quaternion); // Sesuaikan arah dengan orientasi model
+  spaceship.position.add(direction.multiplyScalar(speed));
+};
+
+const rotateLeft = () => {
+  spaceship.rotation.y += rotate;
+};
+
+const rotateRight = () => {
+  spaceship.rotation.y -= rotate;
+};
+
+const rotateUp = () => {
+  spaceship.rotation.z -= rotate;
+};
+
+const rotateDown = () => {
+  spaceship.rotation.z += rotate;
 };
 
 
