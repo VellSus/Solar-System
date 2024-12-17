@@ -3,7 +3,17 @@ import { GLTFLoader } from "./threejs/threejs/examples/jsm/loaders/GLTFLoader.js
 import { OrbitControls } from "./threejs/threejs/examples/jsm/controls/OrbitControls.js";
 import { FontLoader } from "./threejs/threejs/examples/jsm/loaders/FontLoader.js";
 import { TextGeometry } from "./threejs/threejs/examples/jsm/geometries/TextGeometry.js";
-var scene,FRcamera,TPcamera,renderer,x,y,z,orbitControls,spaceship,spotLight;
+var scene,
+  FRcamera,
+  TPcamera,
+  renderer,
+  x,
+  y,
+  z,
+  orbitControls,
+  spaceship,
+  spotLight,
+  currentPlanet;
 let sun,
   mercury,
   venus,
@@ -518,6 +528,7 @@ window.onmousemove = event =>{
   }
 
 const createText = (planet, position) => {
+  if(planet!=currentPlanet){
   let loader = new FontLoader();
   loader.load("./threejs/threejs/examples/fonts/optimer_regular.typeface.json", (font) => {
     const geometry = new TextGeometry(planet, {
@@ -528,15 +539,13 @@ const createText = (planet, position) => {
     let material = new THREE.MeshBasicMaterial({ color: 0xffffff });
     let mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(position.x, position.y, position.z);
-    if(textMesh){
       removeTextOnMouseMove();
-    }
+    currentPlanet=planet;
     textMesh=mesh;
-    console.log("Text shouldve exist");
-    console.log(position.x,position.y,position.z);
     scene.add(mesh); 
     mesh.material.color.set(getRandomColor());
   });
+}
 };
 const removeTextOnMouseMove = () => {
   if (textMesh) {
