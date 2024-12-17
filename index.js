@@ -23,9 +23,14 @@ let sun,
   saturn,
   uranus,
   neptune,
+  uranusring,
+  saturnring,
+  satelite,
   textMesh = null,
   hoveredObject = null,
   originalColor = null;
+  let orbitingObjects = []; // Array to store objects that orbit around the Sun
+  let angles = {}; 
 
 var speed = 0.05;
 var rotate = 0.005;
@@ -63,12 +68,10 @@ const ambientLight = new THREE.AmbientLight("#FFFFFF", 1);
 scene.add(ambientLight);
 createObject();
 loadSpaceshipModel();
-// generateBoxes();
 }
 
 const render=()=>{
 requestAnimationFrame(render);
-// orbitControls.update();
 renderer.render(scene,TPcamera);
 animate();
 }
@@ -166,7 +169,7 @@ neptune = createSphere(
   "./assets/textures/neptune.jpg"
 );
 neptune.name="Neptune";
-let uranusring = createRing(
+uranusring = createRing(
   16,
   20,
   64,
@@ -175,7 +178,7 @@ let uranusring = createRing(
   false,
   "./assets/textures/uranus_ring.png"
 );
-let saturnring = createRing(
+saturnring = createRing(
   16,
   32,
   64,
@@ -184,7 +187,7 @@ let saturnring = createRing(
   false,
   "./assets/textures/saturn_ring.png"
 );
-let satelite = createCylinder(
+satelite = createCylinder(
   1,
   0.5,
   0.4,
@@ -243,6 +246,20 @@ saturnring.position.set(280, 320, 0);
 uranusring.rotation.set(-Math.PI / 2,0,0);
 saturnring.rotation.set(-Math.PI / 2, 0, 0);
 satelite.position.set(100+8,320,0);
+
+orbitingObjects.push(
+  mercury,
+  venus,
+  earth,
+  mars,
+  jupiter,
+  saturn,
+  uranus,
+  neptune,
+  saturnring,
+  uranusring,
+  satelite
+);
 let objects=[pointLight,spotLight,sun,mercury,venus,earth,mars,jupiter,saturn,uranus,neptune,saturnring,uranusring,satelite,skyBox];
 objects.forEach(element => {
     scene.add(element);
@@ -315,52 +332,6 @@ const createCylinder = (top, bottom, height, segment,color,metalness,roughness,r
   return mesh;
 };
 
-// let keyListener=event=>{
-//   let keycode=event.keyCode;
-//   if (keycode == 87) {
-//     spaceship.position.x += 1;
-//     TPcamera.position.x += 1;
-//     spotLight.position.x += 1;
-//   } else if (keycode == 83) {
-//     spaceship.position.x -= 1;
-//     TPcamera.position.x -= 1;
-//     spotLight.position.x -= 1;
-//   } else if (keycode == 65) {
-//     spaceship.position.z -= 1;
-//     TPcamera.position.z -= 1;
-//     spotLight.position.z -= 1;
-//   } else if (keycode == 68) {
-//     spaceship.position.z += 1;
-//     TPcamera.position.z += 1;
-//     spotLight.position.z += 1;
-//   } else if (keycode == 32) {
-//     spaceship.position.y += 1;
-//     TPcamera.position.y += 1;
-//     spotLight.position.y += 1;
-//   } else if (keycode == 8) {
-//     spaceship.position.y -= 1;
-//     TPcamera.position.y -= 1;
-//     spotLight.position.y -= 1;
-//   }
-//   orbitControls.target=spaceship.position;
-//   TPcamera.lookAt(spaceship.position);
-
-// }
-// let addListener=_=>{
-//   document.addEventListener("keydown",keyListener);
-// }
-// let generateBoxes=()=>{
-//   for (let index = 0; index <3; index++) {
-//     const geometry= new THREE.BoxGeometry(2,2,2);
-//     const material = new THREE.MeshBasicMaterial({
-//       color:0xff0000
-//     });
-//     const mesh = new THREE.Mesh(geometry,material);
-//     mesh.position.x=index-1*5;
-//     scene.add(mesh);
-//   }
-// }
-
 const updateCamera = () => {
   if (!spaceship) return;
 
@@ -377,6 +348,9 @@ const updateCamera = () => {
 
   TPcamera.lookAt(lookOffset);
 };
+
+
+
 const animate = () => {
   if(!spaceship){
     return;
@@ -400,7 +374,22 @@ const animate = () => {
   if (keyPressed.s) {
     rotateDown();
   }
+  orbitingObjects.forEach((object, index) => {
+    let radius = 60 + index * 30; 
+    let speed = 0.001 + index * 0.0001; 
 
+    if (!angles[object.uuid]) angles[object.uuid] = Math.random() * Math.PI * 2;
+    angles[object.uuid] += speed; 
+    object.position.x = sun.position.x + radius * Math.cos(angles[object.uuid]);
+    object.position.z = sun.position.z + radius * Math.sin(angles[object.uuid]);
+  });
+  uranusring.position.copy(uranus.position); 
+  uranusring.rotation.x = -Math.PI / 2;
+  saturnring.position.copy(saturn.position); 
+  saturnring.rotation.x = -Math.PI / 2;
+  satelite.position.x=earth.position.x+8;
+  satelite.position.y = earth.position.y
+  satelite.position.z = earth.position.z
   updateCamera();
 };
 
@@ -462,56 +451,56 @@ window.onmousemove = event =>{
       createText("mercury", {
         x: mercury.position.x - 15,
         y: mercury.position.y + 10,
-        z: 0,
+        z: mercury.position.z,
       });
       break;
     case "Venus":
       createText("venus", {
         x: venus.position.x - 15,
         y: venus.position.y + 10,
-        z: 0,
+        z: venus.position.z,
       });
       break;
     case "Earth":
       createText("earth", {
         x: earth.position.x - 15,
         y: earth.position.y + 10,
-        z: 0,
+        z: earth.position.z,
       });
       break;
     case "Mars":
       createText("mars", {
         x: mars.position.x - 15,
         y: mars.position.y + 10,
-        z: 0,
+        z: mars.position.z,
       });
       break;
     case "Jupiter":
       createText("jupiter", {
         x: jupiter.position.x - 20,
         y: jupiter.position.y + 20,
-        z: 0,
+        z: jupiter.position.z,
       });
       break;
     case "Saturn":
       createText("saturn", {
         x: saturn.position.x - 20,
         y: saturn.position.y + 20,
-        z: 0,
+        z: saturn.position.z,
       });
       break;
     case "Uranus":
       createText("uranus", {
         x: uranus.position.x - 20,
         y: uranus.position.y + 20,
-        z: 0,
+        z: uranus.position.z,
       });
       break;
     case "Neptune":
       createText("neptune", {
         x: neptune.position.x - 30,
         y: neptune.position.y + 10,
-        z: 0,
+        z: neptune.position.z,
       });
       break;
     default:
@@ -530,21 +519,24 @@ window.onmousemove = event =>{
 const createText = (planet, position) => {
   if(planet!=currentPlanet){
   let loader = new FontLoader();
-  loader.load("./threejs/threejs/examples/fonts/optimer_regular.typeface.json", (font) => {
-    const geometry = new TextGeometry(planet, {
-      font: font,
-      size: 10,
-      height: 10,
-    });
-    let material = new THREE.MeshBasicMaterial({ color: 0xffffff });
-    let mesh = new THREE.Mesh(geometry, material);
-    mesh.position.set(position.x, position.y, position.z);
+  loader.load(
+    "./threejs/threejs/examples/fonts/helvetiker_regular.typeface.json",
+    (font) => {
+      const geometry = new TextGeometry(planet, {
+        font: font,
+        size: 10,
+        height: 10,
+      });
+      let material = new THREE.MeshBasicMaterial({ color: 0xffffff });
+      let mesh = new THREE.Mesh(geometry, material);
+      mesh.position.set(position.x, position.y, position.z);
       removeTextOnMouseMove();
-    currentPlanet=planet;
-    textMesh=mesh;
-    scene.add(mesh); 
-    mesh.material.color.set(getRandomColor());
-  });
+      currentPlanet = planet;
+      textMesh = mesh;
+      scene.add(mesh);
+      mesh.material.color.set(getRandomColor());
+    }
+  );
 }
 };
 const removeTextOnMouseMove = () => {
