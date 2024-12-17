@@ -382,6 +382,11 @@ const animate = () => {
     angles[object.uuid] += speed; 
     object.position.x = sun.position.x + radius * Math.cos(angles[object.uuid]);
     object.position.z = sun.position.z + radius * Math.sin(angles[object.uuid]);
+      if (textMesh && object.name === currentPlanet) {
+        textMesh.position.x = object.position.x-45;
+        textMesh.position.y = object.position.y + 30;
+        textMesh.position.z = object.position.z;
+      }
   });
   uranusring.position.copy(uranus.position); 
   uranusring.rotation.x = -Math.PI / 2;
@@ -390,6 +395,9 @@ const animate = () => {
   satelite.position.x=earth.position.x+8;
   satelite.position.y = earth.position.y
   satelite.position.z = earth.position.z
+   if (textMesh && spaceship) {
+     textMesh.lookAt(spaceship.position);
+   }
   updateCamera();
 };
 
@@ -441,63 +449,63 @@ window.onmousemove = event =>{
       if (!textMesh || textMesh.name !== object.name) {
   switch (object.name) {
     case "Sun":
-      createText("sun", {
+      createText("Sun", {
         x: sun.position.x - 15,
         y: sun.position.y + 60,
         z: 0,
       });
       break;
     case "Mercury":
-      createText("mercury", {
+      createText("Mercury", {
         x: mercury.position.x - 15,
         y: mercury.position.y + 10,
         z: mercury.position.z,
       });
       break;
     case "Venus":
-      createText("venus", {
+      createText("Venus", {
         x: venus.position.x - 15,
         y: venus.position.y + 10,
         z: venus.position.z,
       });
       break;
     case "Earth":
-      createText("earth", {
+      createText("Earth", {
         x: earth.position.x - 15,
         y: earth.position.y + 10,
         z: earth.position.z,
       });
       break;
     case "Mars":
-      createText("mars", {
+      createText("Mars", {
         x: mars.position.x - 15,
         y: mars.position.y + 10,
         z: mars.position.z,
       });
       break;
     case "Jupiter":
-      createText("jupiter", {
+      createText("Jupiter", {
         x: jupiter.position.x - 20,
         y: jupiter.position.y + 20,
         z: jupiter.position.z,
       });
       break;
     case "Saturn":
-      createText("saturn", {
+      createText("Saturn", {
         x: saturn.position.x - 20,
         y: saturn.position.y + 20,
         z: saturn.position.z,
       });
       break;
     case "Uranus":
-      createText("uranus", {
+      createText("Uranus", {
         x: uranus.position.x - 20,
         y: uranus.position.y + 20,
         z: uranus.position.z,
       });
       break;
     case "Neptune":
-      createText("neptune", {
+      createText("Neptune", {
         x: neptune.position.x - 30,
         y: neptune.position.y + 10,
         z: neptune.position.z,
