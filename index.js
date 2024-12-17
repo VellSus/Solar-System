@@ -431,17 +431,16 @@ window.onmousemove = event =>{
   }
 
 const createText = (planet, position) => {
-  const loader = new FontLoader();
+  let loader = new FontLoader();
   loader.load("./threejs/threejs/examples/fonts/optimer_regular.typeface.json", (font) => {
     const geometry = new TextGeometry(planet, {
       font: font,
-      size: 100,
+      size: 1,
       height: 1,
     });
-    const material = new THREE.MeshBasicMaterial({ color: 0x000000 });
-    const mesh = new THREE.Mesh(geometry, material);
+    let material = new THREE.MeshBasicMaterial({ color: 0x000000 });
+    let mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(position.x, position.y, position.z);
-    mesh.scale.set(1, 1, 1);
     if(textMesh){
       removeTextOnMouseMove();
     }
