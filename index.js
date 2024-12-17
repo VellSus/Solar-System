@@ -515,7 +515,7 @@ window.onmousemove = event =>{
       });
       break;
     default:
-      break;
+      currentPlanet = null;
   }
 }
   }
@@ -586,7 +586,7 @@ window.addEventListener("keyup", (event) => {
 });
 
 const moveForward = () => {
-  const direction = new THREE.Vector3(0, 0, 1); // Arah default "maju"
+  const direction = new THREE.Vector3(0, 0, 5); // Arah default "maju"
   direction.applyQuaternion(spaceship.quaternion); // Sesuaikan arah dengan orientasi model
   spaceship.position.add(direction.multiplyScalar(speed));
 };
