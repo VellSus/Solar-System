@@ -64,8 +64,8 @@ const init = () => {
   TPcamera.rotation.set(-Math.PI / 2, -Math.PI / 2, -Math.PI / 2);
   orbitControls = new OrbitControls(TPcamera, renderer.domElement);
   orbitControls.autoRotate = true;
-  const ambientLight = new THREE.AmbientLight("#FFFFFF", 1);
-  scene.add(ambientLight);
+  // const ambientLight = new THREE.AmbientLight("#FFFFFF", 1);
+  // scene.add(ambientLight);
   createObject();
   loadSpaceshipModel();
 };
@@ -94,7 +94,7 @@ window.onresize = () => {
 const createObject = () => {
   let pointLight = new THREE.PointLight("#FFFFFF", 1, 1280, 0);
   pointLight.position.set(640, 320, 0);
-  spotLight = new THREE.SpotLight("#FFFFFF", 1, 8);
+  spotLight = new THREE.SpotLight("#FFFFFF", 8, 8);
   spotLight.position.set(100, 326, 60);
   sun = createSun(40, "#FFFFFF", false, false, "./assets/textures/sun.jpg");
   sun.name = "Sun";
@@ -483,6 +483,9 @@ const animate = () => {
   if (textMesh && spaceship) {
     textMesh.lookAt(spaceship.position);
   }
+  spotLight.position.x=spaceship.position.x;
+  spotLight.position.y = spaceship.position.y+8;
+  spotLight.position.z = spaceship.position.z;
 
   updateCamera();
 };
