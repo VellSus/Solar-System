@@ -434,43 +434,77 @@ window.onmousemove = event =>{
       hoveredObject = object;
       originalColor = object.material.color.getHex();
       object.material.color.set(getRandomColor());
+      removeTextOnMouseMove();
     }
   }
 
   console.log(object.name);
       if (!textMesh || textMesh.name !== object.name) {
-      removeTextOnMouseMove();
   switch (object.name) {
     case "Sun":
-      createText("sun", { x: 640, y: 350, z: 0 });
+      createText("sun", {
+        x: sun.position.x - 15,
+        y: sun.position.y + 60,
+        z: 0,
+      });
       break;
     case "Mercury":
-      createText("mercury", { x: 58, y: 350, z: 0 });
+      createText("mercury", {
+        x: mercury.position.x - 15,
+        y: mercury.position.y + 10,
+        z: 0,
+      });
       break;
     case "Venus":
-      createText("venus", { x: 80, y: 350, z: 0 });
+      createText("venus", {
+        x: venus.position.x - 15,
+        y: venus.position.y + 10,
+        z: 0,
+      });
       break;
     case "Earth":
-      createText("earth", { x: 100, y: 350, z: 0 });
+      createText("earth", {
+        x: earth.position.x - 15,
+        y: earth.position.y + 10,
+        z: 0,
+      });
       break;
     case "Mars":
-      createText("mars", { x: 130, y: 350, z: 0 });
+      createText("mars", {
+        x: mars.position.x - 15,
+        y: mars.position.y + 10,
+        z: 0,
+      });
       break;
     case "Jupiter":
-      createText("jupiter", { x: 175, y: 350, z: 0 });
+      createText("jupiter", {
+        x: jupiter.position.x - 20,
+        y: jupiter.position.y + 20,
+        z: 0,
+      });
       break;
     case "Saturn":
-      createText("saturn", { x: 240, y: 350, z: 0 });
+      createText("saturn", {
+        x: saturn.position.x - 20,
+        y: saturn.position.y + 20,
+        z: 0,
+      });
       break;
     case "Uranus":
-      createText("uranus", { x: 280, y: 350, z: 0 });
+      createText("uranus", {
+        x: uranus.position.x - 20,
+        y: uranus.position.y + 20,
+        z: 0,
+      });
       break;
     case "Neptune":
-      createText("neptune", { x: 320, y: 350, z: 0 });
+      createText("neptune", {
+        x: neptune.position.x - 30,
+        y: neptune.position.y + 10,
+        z: 0,
+      });
       break;
     default:
-      console.log("nothing");
-      removeTextOnMouseMove();
       break;
   }
 }
@@ -480,7 +514,6 @@ window.onmousemove = event =>{
           hoveredObject.material.color.set(originalColor);
           hoveredObject = null;
         }
-        removeTextOnMouseMove();
   }
   }
 
@@ -501,7 +534,6 @@ const createText = (planet, position) => {
     textMesh=mesh;
     console.log("Text shouldve exist");
     console.log(position.x,position.y,position.z);
-    spaceship.position.set(position.x, position.y, position.z); 
     scene.add(mesh); 
     mesh.material.color.set(getRandomColor());
   });
