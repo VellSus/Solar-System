@@ -165,6 +165,7 @@ const createObject = () => {
     false,
     "./assets/textures/uranus_ring.png"
   );
+  uranusring.name="Uranus Ring";
   saturnring = createRing(
     16,
     32,
@@ -174,7 +175,9 @@ const createObject = () => {
     false,
     "./assets/textures/saturn_ring.png"
   );
+  saturnring.name="Saturn Ring"
   satelite = createCylinder(1, 0.5, 0.4, 8, "#FFFFFF", 0.5, 0.5, true, false);
+  satelite.name="Satelite";
   let skyGeo = new THREE.BoxGeometry(4260, 4260, 4260);
   let loader = new THREE.TextureLoader();
   let skyMat = [
@@ -235,7 +238,7 @@ const createObject = () => {
     neptune,
     saturnring,
     uranusring,
-    satelite
+    satelite,
   );
   let objects = [
     pointLight,
@@ -295,13 +298,16 @@ const createRing = (inner, outer, segment, color, receive, cast, picture) => {
   let mesh = new THREE.Mesh(geometry, material);
   mesh.receiveShadow = receive;
   mesh.castShadow = cast;
+
+  mesh.rotation.set(-Math.PI / 2, 0, 0);
+
   return mesh;
 };
 const loadSpaceshipModel = () => {
   const loader = new GLTFLoader();
   loader.load("./assets/model/spaceship/scene.gltf", (gltf) => {
     spaceship = gltf.scene;
-    spaceship.position.set(100, 320, 44);
+    spaceship.position.set(50, 320, 0);
     spaceship.scale.set(1, 1, 1);
     spaceship.rotation.y = Math.PI / 2;
     spaceship.castShadow = true;
@@ -344,71 +350,132 @@ const updateCamera = () => {
   TPcamera.position.copy(spaceship.position).add(offset);
 
   let lookOffset = new THREE.Vector3().copy(spaceship.position);
-  // lookOffset.y += 0.5;
 
   TPcamera.lookAt(lookOffset);
 };
 
+let planetSpeed = 0.0005;
+let acceleration = 0.00005;
+let deceleration = 0.00001;
+let isClicked = false;
+let lastClickedTime = 0;
+let clickedPlanet = null;
+let sunRotationSpeed = 0.01;
+
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+
+window.addEventListener("click", (event) => {
+  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+  raycaster.setFromCamera(mouse, TPcamera);
+
+  const intersects = raycaster.intersectObjects(scene.children);
+
+  if (intersects.length > 0) {
+    clickedPlanet = intersects[0].object;
+    if (clickedPlanet == sun) {
+      isClicked = true;
+      if(sunRotationSpeed==0.05){
+        sunRotationSpeed=0.01;
+        isClicked=false;
+      }else{
+      sunRotationSpeed = 0.05;
+      }
+      lastClickedTime = Date.now();
+    }else{
+
+    isClicked = true;
+    lastClickedTime = Date.now();
+    }
+    
+  }
+});
+
 const animate = () => {
-  if (!spaceship) {
-    return;
-  }
+  if (!spaceship) return;
 
-  if (keyPressed.w) {
-    moveForward();
-  }
+  if (keyPressed.w) moveForward();
+  if (keyPressed.a) rotateLeft();
+  if (keyPressed.d) rotateRight();
+  if (keyPressed.space) rotateUp();
+  if (keyPressed.s) rotateDown();
 
-  if (keyPressed.a) {
-    rotateLeft();
-  }
+  if (isClicked && clickedPlanet &&clickedPlanet!=sun ) {
+    const timeSinceLastClick = Date.now() - lastClickedTime;
+    sunRotationSpeed=0.01;
+    clickedPlanet.revolutionSpeed =
+      (clickedPlanet.revolutionSpeed || planetSpeed) + acceleration;
+    clickedPlanet.rotationSpeed =
+      (clickedPlanet.rotationSpeed || 0.1) + acceleration;
 
-  if (keyPressed.d) {
-    rotateRight();
+    if (timeSinceLastClick > 5000) {
+      isClicked = false;
+      clickedPlanet.revolutionSpeed = planetSpeed;
+      clickedPlanet.rotationSpeed = 0.01;
+    }
+  } else if (clickedPlanet && clickedPlanet != sun) {
+    if (clickedPlanet.revolutionSpeed > planetSpeed) {
+      clickedPlanet.revolutionSpeed -= deceleration;
+    }
+    if (clickedPlanet.rotationSpeed > 0.01) {
+      clickedPlanet.rotationSpeed -= deceleration;
+    }
+  } else if (clickedPlanet == sun && isClicked) {
+    const timeSinceLastClick = Date.now() - lastClickedTime;
+    if (timeSinceLastClick > 5000) {
+      isClicked = false;
+      sunRotationSpeed = 0.01;
+    }
   }
+    else if(clickedPlanet==sun){
+      if (clickedPlanet.rotationSpeed > 0.01) {
+        clickedPlanet.rotationSpeed -= deceleration;
+      }
+    }
+  
 
-  if (keyPressed.space) {
-    rotateUp();
-  }
+  orbitingObjects.forEach((planet, index) => {
+    if(planet.name!="Saturn Ring"&&planet.name!="Satelite"&&planet.name!="Uranus Ring"){
+    let currentRevolutionSpeed =
+      planet === clickedPlanet
+        ? planet.revolutionSpeed || planetSpeed
+        : planetSpeed;
+    let currentRotationSpeed =
+      planet === clickedPlanet ? planet.rotationSpeed || 0.01 : 0.01;
 
-  if (keyPressed.s) {
-    rotateDown();
-  }
-  let rotationSpeed = 0.01;
-    let quaternion = new THREE.Quaternion().setFromAxisAngle(
-      new THREE.Vector3(0, 1, 0),
-        rotationSpeed
-      );
-      sun.quaternion.multiplyQuaternions(quaternion, sun.quaternion);
+    planet.rotation.y += currentRotationSpeed;
 
-  orbitingObjects.forEach((object, index) => {
     let radius = 60 + index * 30;
-    let speed = 0.001 + index * 0.0001;
+    let speed = currentRevolutionSpeed + index * 0.00005;
 
-    if (!angles[object.uuid]) angles[object.uuid] = Math.random() * Math.PI * 2;
-    angles[object.uuid] += speed;
-    object.position.x = sun.position.x + radius * Math.cos(angles[object.uuid]);
-    object.position.z = sun.position.z + radius * Math.sin(angles[object.uuid]);
+    if (!angles[planet.uuid]) angles[planet.uuid] = Math.random() * Math.PI * 2;
+    angles[planet.uuid] += speed;
+    planet.position.x = sun.position.x + radius * Math.cos(angles[planet.uuid]);
+    planet.position.z = sun.position.z + radius * Math.sin(angles[planet.uuid]);
 
-    if (object !== sun) {
-      let rotationSpeed = 0.01;
-      let quaternion = new THREE.Quaternion().setFromAxisAngle(
-        new THREE.Vector3(0, 1, 0),
-        rotationSpeed
-      );
-      object.quaternion.multiplyQuaternions(quaternion, object.quaternion);
+    planet.revolutionSpeed = Math.min(planet.revolutionSpeed, 0.01);
+    planet.rotationSpeed = Math.min(planet.rotationSpeed, 0.05);
+
+    if (textMesh && planet.name === currentPlanet) {
+      textMesh.position.x = planet.position.x - 45;
+      textMesh.position.y = planet.position.y + 30;
+      textMesh.position.z = planet.position.z;
     }
-
-    if (textMesh && object.name === currentPlanet) {
-      textMesh.position.x = object.position.x - 45;
-      textMesh.position.y = object.position.y + 30;
-      textMesh.position.z = object.position.z;
-    }
+  }
   });
+  let sunQuaternion = new THREE.Quaternion().setFromAxisAngle(
+    new THREE.Vector3(0, 1, 0),
+    sunRotationSpeed
+  );
+  sun.quaternion.multiplyQuaternions(sunQuaternion, sun.quaternion);
 
   uranusring.position.copy(uranus.position);
   uranusring.rotation.x = -Math.PI / 2;
   saturnring.position.copy(saturn.position);
   saturnring.rotation.x = -Math.PI / 2;
+
   satelite.position.x = earth.position.x + 8;
   satelite.position.y = earth.position.y;
   satelite.position.z = earth.position.z;
@@ -439,8 +506,6 @@ const getRandomColor = () => {
   return randomColorChoices[randomColor];
 };
 
-const mouse = new THREE.Vector2();
-const raycaster = new THREE.Raycaster();
 window.onmousemove = (event) => {
   console.log(mouse);
   console.log(scene.children);
