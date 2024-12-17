@@ -4,7 +4,18 @@ import { OrbitControls } from "./threejs/threejs/examples/jsm/controls/OrbitCont
 import { FontLoader } from "./threejs/threejs/examples/jsm/loaders/FontLoader.js";
 import { TextGeometry } from "./threejs/threejs/examples/jsm/geometries/TextGeometry.js";
 var scene,FRcamera,TPcamera,renderer,x,y,z,orbitControls,spaceship,spotLight;
-let sun, mercury, venus, earth, mars, jupiter, saturn, uranus, neptune, textMesh=null;
+let sun,
+  mercury,
+  venus,
+  earth,
+  mars,
+  jupiter,
+  saturn,
+  uranus,
+  neptune,
+  textMesh = null,
+  hoveredObject = null,
+  originalColor = null;
 
 var speed = 0.05;
 var rotate = 0.005;
@@ -275,7 +286,7 @@ const loadSpaceshipModel=()=>{
       spaceship = gltf.scene;
       spaceship.position.set(100, 320, 44); 
       spaceship.scale.set(1, 1, 1); 
-      spaceship.rotation.y = 270;
+      spaceship.rotation.y = Math.PI / 2;
       spaceship.castShadow = true;
       spaceship.receiveShadow = true;
       scene.add(spaceship);
@@ -346,7 +357,7 @@ const updateCamera = () => {
   const distanceBehind = 40;
   const heightAbove = 10;
 
-  const offset = new THREE.Vector3(distanceBehind, heightAbove, 0);
+  const offset = new THREE.Vector3(0, heightAbove, -distanceBehind);
 
   offset.applyQuaternion(spaceship.quaternion);
   TPcamera.position.copy(spaceship.position).add(offset);
@@ -382,6 +393,27 @@ const animate = () => {
 
   updateCamera();
 };
+
+const getRandomColor=()=>{
+  let randomColorChoices = [
+    "#00FFFF",
+    "#00FF00",
+    "#FFCC00",
+    "#E6E6FA",
+    "#FF69B4",
+    "#FF8C00",
+    "#FFB6C1",
+    "#00FFFF",
+    "#87CEEB",
+    "#A8FFB2",
+    "#EE82EE",
+    "#ADD8E6",
+  ];
+  let randomColor=Math.floor(Math.random() * randomColorChoices.length);
+  return randomColorChoices[randomColor];
+}
+
+
 const mouse = new THREE.Vector2();
 const raycaster = new THREE.Raycaster();
 window.onmousemove = event =>{
@@ -393,6 +425,18 @@ window.onmousemove = event =>{
   const planet=raycaster.intersectObjects(scene.children);
   if(planet.length>0){
   const object = planet[0].object;
+  if (object.material && object.material.color) {
+    if (hoveredObject && hoveredObject !== object) {
+      hoveredObject.material.color.set(originalColor);
+    }
+
+    if (hoveredObject !== object) {
+      hoveredObject = object;
+      originalColor = object.material.color.getHex();
+      object.material.color.set(getRandomColor());
+    }
+  }
+
   console.log(object.name);
       if (!textMesh || textMesh.name !== object.name) {
       removeTextOnMouseMove();
@@ -431,6 +475,13 @@ window.onmousemove = event =>{
   }
 }
   }
+  else{
+      if (hoveredObject) {
+          hoveredObject.material.color.set(originalColor);
+          hoveredObject = null;
+        }
+        removeTextOnMouseMove();
+  }
   }
 
 const createText = (planet, position) => {
@@ -452,6 +503,7 @@ const createText = (planet, position) => {
     console.log(position.x,position.y,position.z);
     spaceship.position.set(position.x, position.y, position.z); 
     scene.add(mesh); 
+    mesh.material.color.set(getRandomColor());
   });
 };
 const removeTextOnMouseMove = () => {
@@ -493,7 +545,7 @@ window.addEventListener("keyup", (event) => {
 });
 
 const moveForward = () => {
-  const direction = new THREE.Vector3(-1, 0, 0); // Arah default "maju"
+  const direction = new THREE.Vector3(0, 0, 1); // Arah default "maju"
   direction.applyQuaternion(spaceship.quaternion); // Sesuaikan arah dengan orientasi model
   spaceship.position.add(direction.multiplyScalar(speed));
 };
@@ -507,11 +559,11 @@ const rotateRight = () => {
 };
 
 const rotateUp = () => {
-  spaceship.rotation.z -= rotate;
+  spaceship.rotation.x -= rotate;
 };
 
 const rotateDown = () => {
-  spaceship.rotation.z += rotate;
+  spaceship.rotation.x += rotate;
 };
 
 
