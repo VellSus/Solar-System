@@ -394,33 +394,35 @@ window.onmousemove = event =>{
   if(planet.length>0){
   const object = planet[0].object;
   console.log(object.name);
+      if (!textMesh || textMesh.name !== object.name) {
+      removeTextOnMouseMove();
   switch (object.name) {
     case "Sun":
-      createText("sun", { x: 640, y: 400, z: 0 });
+      createText("sun", { x: 640, y: 350, z: 0 });
       break;
     case "Mercury":
-      createText("mercury", { x: 58, y: 400, z: 0 });
+      createText("mercury", { x: 58, y: 350, z: 0 });
       break;
     case "Venus":
-      createText("venus", { x: 80, y: 400, z: 0 });
+      createText("venus", { x: 80, y: 350, z: 0 });
       break;
     case "Earth":
-      createText("earth", { x: 100, y: 400, z: 0 });
+      createText("earth", { x: 100, y: 350, z: 0 });
       break;
     case "Mars":
-      createText("mars", { x: 130, y: 400, z: 0 });
+      createText("mars", { x: 130, y: 350, z: 0 });
       break;
     case "Jupiter":
-      createText("jupiter", { x: 175, y: 400, z: 0 });
+      createText("jupiter", { x: 175, y: 350, z: 0 });
       break;
     case "Saturn":
-      createText("saturn", { x: 240, y: 400, z: 0 });
+      createText("saturn", { x: 240, y: 350, z: 0 });
       break;
     case "Uranus":
-      createText("uranus", { x: 280, y: 400, z: 0 });
+      createText("uranus", { x: 280, y: 350, z: 0 });
       break;
     case "Neptune":
-      createText("neptune", { x: 320, y: 400, z: 0 });
+      createText("neptune", { x: 320, y: 350, z: 0 });
       break;
     default:
       console.log("nothing");
@@ -429,22 +431,26 @@ window.onmousemove = event =>{
   }
 }
   }
+  }
 
 const createText = (planet, position) => {
   let loader = new FontLoader();
   loader.load("./threejs/threejs/examples/fonts/optimer_regular.typeface.json", (font) => {
     const geometry = new TextGeometry(planet, {
       font: font,
-      size: 1,
-      height: 1,
+      size: 10,
+      height: 10,
     });
-    let material = new THREE.MeshBasicMaterial({ color: 0x000000 });
+    let material = new THREE.MeshBasicMaterial({ color: 0xffffff });
     let mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(position.x, position.y, position.z);
     if(textMesh){
       removeTextOnMouseMove();
     }
     textMesh=mesh;
+    console.log("Text shouldve exist");
+    console.log(position.x,position.y,position.z);
+    spaceship.position.set(position.x, position.y, position.z); 
     scene.add(mesh); 
   });
 };
@@ -456,7 +462,7 @@ const removeTextOnMouseMove = () => {
     textMesh = null; 
   }
 };
-window.addEventListener("mousemove", removeTextOnMouseMove);
+// window.addEventListener("mousemove", removeTextOnMouseMove);
 
 window.addEventListener("keydown", (event) => {
   if (event.key === "w" || event.key === "W") {
