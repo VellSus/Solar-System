@@ -13,6 +13,7 @@ var scene,
   orbitControls,
   spaceship,
   spotLight,
+  useTPCamera=true,
   currentPlanet;
 let sun,
   mercury,
@@ -72,7 +73,8 @@ const init = () => {
 
 const render = () => {
   requestAnimationFrame(render);
-  renderer.render(scene, TPcamera);
+    const activeCamera = useTPCamera ? TPcamera : FRcamera;
+    renderer.render(scene, activeCamera);
   animate();
 };
 
@@ -653,6 +655,10 @@ window.addEventListener("keydown", (event) => {
     keyPressed.space = true;
   } else if (event.key === "s" || event.key === "S") {
     keyPressed.s = true;
+  }
+    else if (event.key.toLowerCase() === "q") {
+    useTPCamera = !useTPCamera;
+    console.log(`Switched to ${useTPCamera ? "TPcamera" : "FRcamera"}`);
   }
 });
 
