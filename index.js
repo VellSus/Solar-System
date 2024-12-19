@@ -3,6 +3,7 @@ import { GLTFLoader } from "./threejs/threejs/examples/jsm/loaders/GLTFLoader.js
 import { OrbitControls } from "./threejs/threejs/examples/jsm/controls/OrbitControls.js";
 import { FontLoader } from "./threejs/threejs/examples/jsm/loaders/FontLoader.js";
 import { TextGeometry } from "./threejs/threejs/examples/jsm/geometries/TextGeometry.js";
+
 var scene,
   FRcamera,
   TPcamera,
@@ -27,11 +28,13 @@ let sun,
   uranusring,
   saturnring,
   satelite,
+  FRControls,
   textMesh = null,
   hoveredObject = null,
   originalColor = null;
 let orbitingObjects = []; // Array to store objects that orbit around the Sun
 let angles = {};
+
 
 var speed = 0.05;
 var rotate = 0.005;
@@ -65,6 +68,10 @@ const init = () => {
   TPcamera.rotation.set(-Math.PI / 2, -Math.PI / 2, -Math.PI / 2);
   orbitControls = new OrbitControls(TPcamera, renderer.domElement);
   orbitControls.autoRotate = true;
+    FRControls = new OrbitControls(FRcamera, renderer.domElement);
+    FRControls.enableDamping = true;
+    FRControls.dampingFactor = 0.05;
+    FRControls.enableZoom = true; 
   // const ambientLight = new THREE.AmbientLight("#FFFFFF", 1);
   // scene.add(ambientLight);
   createObject();
@@ -73,9 +80,12 @@ const init = () => {
 
 const render = () => {
   requestAnimationFrame(render);
+  if (!useTPCamera) {
+    FRControls.update();
+  }
     const activeCamera = useTPCamera ? TPcamera : FRcamera;
-    renderer.render(scene, activeCamera);
-  animate();
+    renderer.render(scene, activeCamera); 
+    animate();
 };
 
 window.onload = () => {
